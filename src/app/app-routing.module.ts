@@ -6,8 +6,9 @@ import { AuthGuard } from './auth.guard'
 
 
 const routes: Routes = [
-  { path: 'quiz', component: QuizComponent,canActivate: [AuthGuard]  },
+  { path: 'quiz', component: QuizComponent, canActivate: [AuthGuard] },
   { path: 'login', component: LoginComponent },
+  { path: 'admin', loadChildren: () => import('./admin/admin.module').then(x => x.AdminModule) },
   { path: '**', component: LoginComponent }
 ];
 

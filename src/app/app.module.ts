@@ -11,13 +11,22 @@ import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 
-const config ={
-  apiKey: "AIzaSyA1xuJCq3xgCLy062Ke9XcY0EUZVxUw3eQ",
-  authDomain: "authwithangular-1f1a9.firebaseapp.com",
-  projectId: "authwithangular-1f1a9",
-  storageBucket: "authwithangular-1f1a9.appspot.com",
-  messagingSenderId: "879198193282",
-  appId: "1:879198193282:web:03bf3f57324e386bd8169b"
+// const config ={
+//   apiKey: "AIzaSyA1xuJCq3xgCLy062Ke9XcY0EUZVxUw3eQ",
+//   authDomain: "authwithangular-1f1a9.firebaseapp.com",
+//   projectId: "authwithangular-1f1a9",
+//   storageBucket: "authwithangular-1f1a9.appspot.com",
+//   messagingSenderId: "879198193282",
+//   appId: "1:879198193282:web:03bf3f57324e386bd8169b"
+// };
+const config = {
+  apiKey: "AIzaSyBOCbmD8p1XkFVqTOynXvYM3Z0wvfEMPYU",
+  authDomain: "quizapp-b0de4.firebaseapp.com",
+  projectId: "quizapp-b0de4",
+  storageBucket: "quizapp-b0de4.appspot.com",
+  messagingSenderId: "642256377578",
+  appId: "1:642256377578:web:4cc3326c43ac8359afe993",
+  measurementId: "G-8D5B5KLTT5"
 };
 @NgModule({
   declarations: [

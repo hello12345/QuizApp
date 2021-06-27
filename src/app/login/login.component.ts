@@ -19,6 +19,7 @@ export class LoginComponent implements OnInit {
     
   }
   onGoogleLogin(){
+    debugger;
   this.auth.googleSignin().then((result)=>{
     this.router.navigate(['/quiz']);
     // this.model.email=result.email
