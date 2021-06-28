@@ -1,7 +1,7 @@
 import { Option } from './option';
 
 export class Question {
-    id: number;
+    id: string;
     name: string;
     questionTypeId: number;
     options: Option[];
@@ -13,8 +13,10 @@ export class Question {
         this.name = data.name;
         this.questionTypeId = data.questionTypeId;
         this.options = [];
-        data.options.forEach(o => {
-            this.options.push(new Option(o));
-        });
+        if (data.options) {
+            data.options.forEach(o => {
+                this.options.push(new Option(o));
+            });
+        }
     }
 }

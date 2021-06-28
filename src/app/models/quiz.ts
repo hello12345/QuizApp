@@ -7,7 +7,7 @@ export class Quiz {
     description: string;
     config: QuizConfig;
     questions: Question[];
-
+    Duration: number;
     constructor(data: any) {
         if (data) {
             this.id = data.id;

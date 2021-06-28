@@ -1,6 +1,6 @@
 export class Option {
-    id: number;
-    questionId: number;
+    id: string;
+    questionId: string;
     name: string;
     isAnswer: boolean;
     selected: boolean;

@@ -39,26 +39,28 @@
     </div>
 </nav>
 <div class="container">
-    <div class="row">
-        <div class="col-md-3">
-            <div class="form-group">
-                <label for="exampleFormControlInput1">Name</label>
-                <input type="text" class="form-control" placeholder="Name">
+    <form [formGroup]="quizForm">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">Name</label>
+                    <input formControlName="Name" type="text" class="form-control" placeholder="Name">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">Description</label>
+                    <input formControlName="Description" type="text" class="form-control" placeholder="description">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">Duration (in Min)</label>
+                    <input formControlName="Duration" type="text" class="form-control" placeholder="Duration">
+                </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="form-group">
-                <label for="exampleFormControlInput1">Description</label>
-                <input type="text" class="form-control" placeholder="description">
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="form-group">
-                <label for="exampleFormControlInput1">Duration (in Min)</label>
-                <input type="text" class="form-control" placeholder="Duration">
-            </div>
-        </div>
-    </div>
+    </form>
     <div class="row">
         <div class="col-md-12">
             <div id='my-spreadsheet'></div>
