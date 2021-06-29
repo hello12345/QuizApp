@@ -6,15 +6,17 @@ import { Option, Question, Quiz, QuizConfig } from '../models/index';
 import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
 
+import { AngularFirestore } from '@angular/fire/firestore';
+
 @Component({
   selector: 'app-quiz',
   templateUrl: './quiz.component.html',
   styleUrls: ['./quiz.component.css'],
-  providers: [QuizService]
+  providers: [QuizService],
 })
 export class QuizComponent implements OnInit {
-
-  quizes: any[];
+  quizes = [];
+  allquize= [];
   quiz: Quiz = new Quiz(null);
   mode = 'quiz';
   quizName: string;
@@ -44,22 +46,38 @@ export class QuizComponent implements OnInit {
   ellapsedTime = '00:00';
   duration = '';
 
-  constructor(private quizService: QuizService,private auth: AuthService,private router:Router) { }
+  constructor(
+    private quizService: QuizService,
+    private auth: AuthService,
+    private router: Router,
+    private firestore: AngularFirestore
+  ) {}
 
   ngOnInit(): void {
-    this.quizes = this.quizService.getAll();
-    this.quizName = this.quizes[0].id;
-    this.loadQuiz(this.quizName);
+    this.firestore
+      .collection('quiz')
+      .get()
+      .forEach((x: any) => {
+        x.docs.forEach((doc: any) => {
+          this.quizes.push({ id: doc.id, name: doc.data().name });
+          this.allquize.push({id: doc.id, name: doc.data()})
+          this.quizName = this.quizes[0].id;
+          this.loadQuiz(this.quizName);
+        });
+      });
   }
   loadQuiz(quizName: string) {
-    this.quizService.get(quizName).subscribe(res => {
-      this.quiz = new Quiz(res);
-      this.pager.count = this.quiz.questions.length;
-      this.startTime = new Date();
-      this.ellapsedTime = '00:00';
-      this.timer = setInterval(() => { this.tick(); }, 1000);
-      this.duration = this.parseTime(this.config.duration);
-    });
+     let resultQuiz = this.allquize.filter((q) => q.id === quizName).map((x)=>{
+       return x.name
+     })
+    this.quiz = new Quiz(resultQuiz[0]);
+    this.pager.count = this.quiz.questions.length;
+    this.startTime = new Date();
+    this.ellapsedTime = '00:00';
+    this.timer = setInterval(() => {
+      this.tick();
+    }, 1000);
+    this.duration = this.parseTime(this.config.duration);
     this.mode = 'quiz';
   }
   parseTime(totalSeconds: number) {
@@ -79,7 +97,13 @@ export class QuizComponent implements OnInit {
   }
   onSubmit() {
     let answers = [];
-    this.quiz.questions.forEach(x => answers.push({ 'quizId': this.quiz.id, 'questionId': x.id, 'answered': x.answered }));
+    this.quiz.questions.forEach((x) =>
+      answers.push({
+        quizId: this.quiz.id,
+        questionId: x.id,
+        answered: x.answered,
+      })
+    );
 
     // Post your data to the server here. answers contains the questionId and the users' answer.
     console.log(this.quiz.questions);
@@ -94,15 +118,21 @@ export class QuizComponent implements OnInit {
   }
 
   isAnswered(question: Question) {
-    return question.options.find(x => x.selected) ? 'Answered' : 'Not Answered';
-  };
+    return question.options.find((x) => x.selected)
+      ? 'Answered'
+      : 'Not Answered';
+  }
 
   isCorrect(question: Question) {
-    return question.options.every(x => x.selected === x.isAnswer) ? 'correct' : 'wrong';
-  };
+    return question.options.every((x) => x.selected === x.isAnswer)
+      ? 'correct'
+      : 'wrong';
+  }
   onSelect(question: Question, option: Option) {
     if (question.questionTypeId === 1) {
-      question.options.forEach((x) => { if (x.id !== option.id) x.selected = false; });
+      question.options.forEach((x) => {
+        if (x.id !== option.id) x.selected = false;
+      });
     }
 
     if (this.config.autoMove) {
@@ -110,12 +140,16 @@ export class QuizComponent implements OnInit {
     }
   }
   get filteredQuestions() {
-    return (this.quiz.questions) ?
-      this.quiz.questions.slice(this.pager.index, this.pager.index + this.pager.size) : [];
+    return this.quiz.questions
+      ? this.quiz.questions.slice(
+          this.pager.index,
+          this.pager.index + this.pager.size
+        )
+      : [];
   }
-logout(){
-  this.auth.signOut().then(()=>{
-    this.router.navigate(['/login']);
-  })
-}
+  logout() {
+    this.auth.signOut().then(() => {
+      this.router.navigate(['/login']);
+    });
+  }
 }
