@@ -3,13 +3,15 @@ import { Routes, RouterModule } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 import { QuizComponent } from './quiz/quiz.component';
 import { AuthGuard } from './auth.guard'
+import { HomeComponent } from './home/home.component';
 
 
 const routes: Routes = [
-  { path: 'quiz', component: QuizComponent, canActivate: [AuthGuard] },
   { path: 'login', component: LoginComponent },
   { path: 'admin', loadChildren: () => import('./admin/admin.module').then(x => x.AdminModule) },
-  { path: '**', component: LoginComponent }
+  { path: ':id', component: QuizComponent, canActivate: [AuthGuard] },
+  { path: '**', component: HomeComponent, canActivate: [AuthGuard]},
+  { path: '', component: HomeComponent, canActivate: [AuthGuard]}
 ];
 
 @NgModule({

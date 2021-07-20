@@ -4,10 +4,11 @@ import { QuizService } from '../services/quiz.service';
 import { HelperService } from '../services/helper.service';
 import { Option, Question, Quiz, QuizConfig } from '../models/index';
 import { AuthService } from '../auth.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { AngularFirestore } from '@angular/fire/firestore';
-
+import firebase from 'firebase/app'
+import { map, take, tap } from 'rxjs/operators';
 @Component({
   selector: 'app-quiz',
   templateUrl: './quiz.component.html',
@@ -15,8 +16,12 @@ import { AngularFirestore } from '@angular/fire/firestore';
   providers: [QuizService],
 })
 export class QuizComponent implements OnInit {
+  IsName = false;
+  Name = "";
+  id = '';
+  uid;
   quizes = [];
-  allquize= [];
+  allquize = [];
   quiz: Quiz = new Quiz(null);
   mode = 'quiz';
   quizName: string;
@@ -28,8 +33,8 @@ export class QuizComponent implements OnInit {
     'pageSize': 1,
     'requiredAll': false,  // indicates if you must answer all the questions before submitting.
     'richText': false,
-    'shuffleQuestions': false,
-    'shuffleOptions': false,
+    'shuffleQuestions': true,
+    'shuffleOptions': true,
     'showClock': true,
     'showPager': true,
     'theme': 'none'
@@ -50,34 +55,42 @@ export class QuizComponent implements OnInit {
     private quizService: QuizService,
     private auth: AuthService,
     private router: Router,
-    private firestore: AngularFirestore
-  ) {}
+    private firestore: AngularFirestore, private route: ActivatedRoute
+  ) { }
 
   ngOnInit(): void {
+    this.id = this.route.snapshot.params.id;
     this.firestore
       .collection('quiz')
       .get()
       .forEach((x: any) => {
         x.docs.forEach((doc: any) => {
           this.quizes.push({ id: doc.id, name: doc.data().name });
-          this.allquize.push({id: doc.id, name: doc.data()})
-          this.quizName = this.quizes[0].id;
+          this.allquize.push({ id: doc.id, name: doc.data() })
+          this.quizName = this.id;
           this.loadQuiz(this.quizName);
         });
       });
+    this.auth.user$.subscribe(val => {
+      this.uid = val.uid;
+    });
   }
   loadQuiz(quizName: string) {
-     let resultQuiz = this.allquize.filter((q) => q.id === quizName).map((x)=>{
-       return x.name
-     })
+    let resultQuiz = this.allquize.filter((q) => q.id === quizName).map((x) => {
+      return x.name
+    })
     this.quiz = new Quiz(resultQuiz[0]);
+    this.quiz.questions.forEach(x => {
+      x.options = this.shuffle(x.options)
+    })
     this.pager.count = this.quiz.questions.length;
     this.startTime = new Date();
     this.ellapsedTime = '00:00';
     this.timer = setInterval(() => {
       this.tick();
     }, 1000);
-    this.duration = this.parseTime(this.config.duration);
+    debugger
+    this.duration = this.parseTime(this.quiz.Duration);
     this.mode = 'quiz';
   }
   parseTime(totalSeconds: number) {
@@ -90,24 +103,45 @@ export class QuizComponent implements OnInit {
   tick() {
     const now = new Date();
     const diff = (now.getTime() - this.startTime.getTime()) / 1000;
-    if (diff >= this.config.duration) {
+    if (diff >= this.quiz.Duration) {
       this.onSubmit();
     }
     this.ellapsedTime = this.parseTime(diff);
   }
   onSubmit() {
     let answers = [];
-    this.quiz.questions.forEach((x) =>
+    let cntCorrect = 0;
+    let cntAnswered = 0;
+    debugger;
+    this.quiz.questions.forEach((x) => {
+      if (this.isCorrect(x) == 'correct') {
+        cntCorrect = cntCorrect + 1;
+      }
+      if (this.isAnswered(x) == 'Answered') {
+        cntAnswered = cntAnswered + 1;
+      }
       answers.push({
         quizId: this.quiz.id,
         questionId: x.id,
         answered: x.answered,
       })
-    );
+    });
 
-    // Post your data to the server here. answers contains the questionId and the users' answer.
-    console.log(this.quiz.questions);
+    // Post your data to the server here. answers contains the questionId and the users' answer.    
     this.mode = 'result';
+    let obj = JSON.parse(JSON.stringify(this.quiz))
+    obj.Correct = cntCorrect;
+    obj.Answered = cntAnswered;
+    obj.UserSelectedName = this.Name;
+    const userRef = this.firestore.doc(`users/${this.uid}`);
+    userRef.update({
+      quiz: firebase.firestore.FieldValue.arrayUnion(obj)
+    }).then(val => {
+      setInterval(() => {
+        this.router.navigate(['/']);
+      }, 3000);
+    });
+
   }
 
   goTo(index: number) {
@@ -142,14 +176,33 @@ export class QuizComponent implements OnInit {
   get filteredQuestions() {
     return this.quiz.questions
       ? this.quiz.questions.slice(
-          this.pager.index,
-          this.pager.index + this.pager.size
-        )
+        this.pager.index,
+        this.pager.index + this.pager.size
+      )
       : [];
   }
   logout() {
     this.auth.signOut().then(() => {
       this.router.navigate(['/login']);
     });
+  }
+  shuffle(array) {
+    let currentIndex = array.length, temp, randomIndex;
+
+    while (0 !== currentIndex) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+
+      temp = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temp;
+    }
+    return array;
+  }
+  SaveName() {
+    if (this.Name) {
+      this.IsName = !this.IsName;
+      this.startTime = new Date();
+    }
   }
 }

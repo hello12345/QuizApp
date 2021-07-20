@@ -10,6 +10,7 @@ import { LoginComponent } from './login/login.component';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AngularFireAuthModule } from '@angular/fire/auth';
+import { HomeComponent } from './home/home.component';
 
 // const config ={
 //   apiKey: "AIzaSyA1xuJCq3xgCLy062Ke9XcY0EUZVxUw3eQ",
@@ -32,7 +33,8 @@ const config = {
   declarations: [
     AppComponent,
     QuizComponent,
-    LoginComponent
+    LoginComponent,
+    HomeComponent
   ],
   imports: [
     BrowserModule,

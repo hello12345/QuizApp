@@ -13,6 +13,7 @@ import { QuizService } from '../../services/quiz.service';
 export class QuizListComponent implements OnInit, AfterViewInit {
   quizTable;
   quizForm: FormGroup;
+  quizes = [];
   constructor(private afs: AngularFirestore, private quizService: QuizService, public fb: FormBuilder) { }
   ngAfterViewInit(): void {
     this.quizTable = jexcel(document.getElementById("my-spreadsheet"), {
@@ -31,6 +32,14 @@ export class QuizListComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.quizForm = this.fb.group({
       Name: [], Description: [], Duration: []
+    });
+    var qiz = this.afs.collection('quiz').get().forEach((x: any) => {
+      
+      x.docs.forEach((doc: any) => {
+        
+        console.log(doc.id, '=>', doc.data());
+        this.quizes.push(doc.data())
+      })
     });
   }
   Submit() {
@@ -83,7 +92,7 @@ export class QuizListComponent implements OnInit, AfterViewInit {
         quiz.Duration = this.quizForm.value.Duration;
         quiz.questions = questions;
         const userRef = this.afs.collection(`quiz`);
-        
+
         userRef.add(JSON.parse(JSON.stringify(quiz))).then(val => {
 
         });
